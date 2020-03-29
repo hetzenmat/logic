@@ -1,7 +1,7 @@
 (require 'logic-lexer)
 
 (defun simplify-and/or (tree)
-  (if (not (memq (car tree) binary-connectives)) tree
+  (if (memq (car tree) 0-ary-connectives) tree
     (let* ((op (car tree))
 	   (args (mapcar #'simplify-and/or (cdr tree)))
 	   (result (list op)))
@@ -14,7 +14,7 @@
 				 (list arg)))))))))
 
 (defun rewrite-implication (tree)
-  (if (not (memq (car tree) binary-connectives)) tree
+  (if (memq (car tree) 0-ary-connectives) tree
   (let ((op (car tree)))
     (simplify-and/or
      (cond
@@ -24,7 +24,7 @@
       (cons op (mapcar #'rewrite-implication (cdr tree)))))))))
 
 (defun rewrite-equivalence (tree)
-  (if (not (memq (car tree) binary-connectives)) tree
+  (if (memq (car tree) 0-ary-connectives) tree
     (let ((op (car tree)))
       (simplify-and/or
        (cond
