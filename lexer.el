@@ -36,7 +36,7 @@
 	  (throw 'error (format-message "No match at position %d (starting with '%s')" position (substring original (1- position))))
 	(unless (eq 'ignore (car longest))
 	  (if (eq 'identifier (car longest))
-	      (push longest result)
+	      (push (list (car longest) (intern (cadr longest))) result)
 	  (push (list (car longest)) result)))
 	(setq position (+ position (length (cadr longest)))
 	      input-string (substring input-string (length (cadr longest))))))
