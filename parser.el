@@ -1,6 +1,18 @@
 (require 'logic-lexer)
 (require 'logic-transformations)
 
+(defconst operator-precedence '(true 6
+				     false 6
+				     identifier 6
+				     negation 5
+				     and 4
+				     or 3
+				     implication 2
+				     equivalence 1
+				     xor 1))
+
+(defconst operator-strings '(and "&" or "|" implication "->" equivalence "<->" xor "<~>"))
+
 (defun parse (input)
   (catch 'error
     (when (stringp input) (setq input (lex input)))
@@ -8,6 +20,22 @@
       (if rest (format-message "Could not fully parse input (rest: %S)" rest)
 	(simplify-and/or result)
       ))))
+
+(defun pretty-print (tree)
+  (pcase tree
+    (`(identifier ,var) (symbol-name var))
+    ('(true) "$true")
+    ('(false) "$false")
+    (`(negation ,arg) (concat "~" (pretty-print arg)))
+    ((and `(,op . ,args)
+	  (guard (memq op binary-connectives)))
+     (let ((prec (plist-get operator-precedence op)) arg-strings)
+       (dolist (arg args)
+	 (if (> (plist-get operator-precedence (car arg)) prec)
+	     (push (pretty-print arg) arg-strings)
+	   (push (concat "(" (pretty-print arg) ")") arg-strings)))
+       (string-join (reverse arg-strings) (concat " " (plist-get operator-strings op) " "))))
+    (_ (error "Wrong format. Given: %S" tree))))
 
 (defun parse-equivalence (tokens)
   (unless tokens (throw 'error "Tokens are empty"))
