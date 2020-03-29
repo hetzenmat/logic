@@ -46,7 +46,7 @@
   (unless tokens (throw 'error "Tokens are empty"))
   (let ((first (caar tokens)))
     (cond
-     ((memq first '(true false)) (list first (cdr tokens)))
+     ((memq first '(true false)) (list (list first) (cdr tokens)))
      ((eq first 'identifier)
       (list (car tokens) (cdr tokens)))
      ((eq first 'negation)
