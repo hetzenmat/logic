@@ -75,4 +75,23 @@
     rewrite-equivalence
     rewrite-negation))
 
+(defun transform-cnf (tree)
+  (if (memq (car tree) 0-ary-connectives) tree
+    (setq tree (cons (car tree) (mapcar #'transform-cnf (cdr tree))))
+    (let ((op (car tree))
+	  (tail (cdr tree))
+	  head and-formula)
+      (simplify-and/or
+       (cond
+	((eq op 'or)
+	 (while (and tail (not (eq (caar tail) 'and)))
+	   (setq head (cons (car tail) head)
+		 tail (cdr tail)))
+	 (if (not tail) (cons 'or (reverse head))
+	   (setq and-args (cdar tail)
+		 other-args (append (reverse head) (cdr tail)))
+	   (cons 'and (dolist (and-arg and-args and-formula)
+			(setq and-formula (cons (cons 'or (cons and-arg (copy-tree other-args))) and-formula))))))
+	(t tree))))))
+
 (provide 'logic-transformations)
